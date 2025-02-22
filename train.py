@@ -328,5 +328,12 @@ def train(model, l, optimizer, epochs, train_data, val_data, device):
     plt.show()
 
 train(model, l, optimizer, epochs, train_data, val_data, device)
-asasdfasdfasdfasdfasdfas
-asdohflashdf
+
+
+        print(f"[ Valid | {epoch + 1:03d}/{epochs:03d} ] loss = {valid_loss:.5f}, acc = {valid_acc:.5f}")
+        
+        # if the model improves, save a checkpoint at this epoch
+        if valid_acc > best_acc:
+            best_acc = valid_acc
+            torch.save(model.state_dict(), "model_path.pth")
+            print('saving model with acc {:.3f}'.format(best_acc))
