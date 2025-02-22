@@ -334,9 +334,9 @@ train(model, l, optimizer, epochs, train_data, val_data, device)
         
         # if the model improves, save a checkpoint at this epoch
         if valid_acc > best_acc:
-            best_acc = valid_acc
-            torch.save(model.state_dict(), "model_path.pth")
-            print('saving model with acc {:.3f}'.format(best_acc))
+           asdfjjsaoidfj
+           asdhfasdhfui
+           sadfhuihiouasdf
 
         # Make sure the model is in eval mode so that some modules like dropout are disabled and work normally.
         model.eval()
