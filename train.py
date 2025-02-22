@@ -126,9 +126,9 @@ valid_ratio = 0.2
 train_dataset = LeavesData(train_path, img_path, mode='train', valid_ratio = valid_ratio , random_state=random_state)
 val_dataset = LeavesData(train_path, img_path, mode='valid', valid_ratio=valid_ratio, random_state=random_state)
 test_dataset = LeavesData(test_path, img_path, mode='test')
-print(train_dataset)
-print(val_dataset)
-print(test_dataset)
+# print(train_dataset)
+# print(val_dataset)
+# print(test_dataset)
 
 def load_data(mode="train", batch_size=32):
     if mode == "train":
@@ -173,10 +173,6 @@ class ResNet32(nn.Module):
                 self.blks.append(self._make_layer(64, 64, num_blocks, 1, is_shortcut=False))
             else:
                 self.blks.append(self._make_layer(64 * 2**(i-1), 64 * 2**i, num_blocks, 2))
-        # self.layer1 = self._make_layer(inchannel=64, outchannel=64, block_num=3, stride=1, is_shortcut=False)
-        # self.layer2 = self._make_layer(inchannel=64, outchannel=128, block_num=4, stride=2)
-        # self.layer3 = self._make_layer(inchannel=128, outchannel=256, block_num=6, stride=2)
-        # self.layer4 = self._make_layer(inchannel=256, outchannel=512, block_num=6, stride=2)
         self.back = nn.Sequential(nn.AdaptiveAvgPool2d((1, 1)), nn.Flatten(), 
                                   nn.Linear(512, num_classes))
 
@@ -211,12 +207,12 @@ print(device)
 model = ResNet32(176)# 176种叶子
 model = model.to(device)
 model.device = device
-print(model)
+# print(model)
 
 l = nn.CrossEntropyLoss()
 lr = 0.1
 optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=5e-4)
-epochs = 10
+epochs = 2
 batch_size = 32
 train_data, val_data = load_data("train", batch_size)
 
@@ -224,6 +220,10 @@ best_acc = 0.0
 
 def train(model, l, optimizer, epochs, train_data, val_data, device):
     best_acc = 0.0
+    train_l = []
+    train_acc = []
+    valid_l = []
+    valid_acc = []
     def init_weight(m):
         if type(m) == nn.Linear or type(m) == nn.Conv2d:
             torch.nn.init.xavier_uniform_(m.weight)
@@ -235,6 +235,7 @@ def train(model, l, optimizer, epochs, train_data, val_data, device):
         # These are used to record information in training.
         train_loss = []
         train_accs = []
+        
         # Iterate the training set by batches.
         for batch in tqdm(train_data):
             # A batch consists of image data and corresponding labels.
@@ -263,10 +264,11 @@ def train(model, l, optimizer, epochs, train_data, val_data, device):
             
         # The average loss and accuracy of the training set is the average of the recorded values.
         train_loss = sum(train_loss) / len(train_loss)
-        train_acc = sum(train_accs) / len(train_accs)
-
+        train_accs = sum(train_accs) / len(train_accs)
+        train_l.append(train_loss)
+        train_acc.append(train_accs)
         # Print the information.
-        print(f"[ Train | {epoch + 1:03d}/{epochs:03d} ] loss = {train_loss:.5f}, acc = {train_acc:.5f}")
+        print(f"[ Train | {epoch + 1:03d}/{epochs:03d} ] loss = {train_loss:.5f}, acc = {train_accs:.5f}")
         
         
         # ---------- Validation ----------
@@ -296,35 +298,37 @@ def train(model, l, optimizer, epochs, train_data, val_data, device):
             
         # The average loss and accuracy for entire validation set is the average of the recorded values.
         valid_loss = sum(valid_loss) / len(valid_loss)
-        valid_acc = sum(valid_accs) / len(valid_accs)
-
+        valid_accs = sum(valid_accs) / len(valid_accs)
+        valid_l.append(valid_loss)
+        valid_acc.append(valid_accs)
         # Print the information.
-        print(f"[ Valid | {epoch + 1:03d}/{epochs:03d} ] loss = {valid_loss:.5f}, acc = {valid_acc:.5f}")
+        print(f"[ Valid | {epoch + 1:03d}/{epochs:03d} ] loss = {valid_loss:.5f}, acc = {valid_accs:.5f}")
         
         # if the model improves, save a checkpoint at this epoch
-        if valid_acc > best_acc:
-            best_acc = valid_acc
+        if valid_accs > best_acc:
+            best_acc = valid_accs
             torch.save(model.state_dict(), "model_path.pth")
             print('saving model with acc {:.3f}'.format(best_acc))
 
     epochs_range = range(1, epochs + 1)
+    print(train_l)
+    print(valid_l)
     plt.figure(figsize=(12, 6))
-
     plt.subplot(1, 2, 1)
-    plt.plot(epochs_range, train_loss, label='Training Loss')
-    plt.plot(epochs_range, valid_loss, label='Validation Loss')
+    plt.plot(epochs_range, train_l, label='Training Loss')
+    plt.plot(epochs_range, valid_l, label='Validation Loss')
     plt.xlabel('Epochs')
     plt.ylabel('Loss')
     plt.legend(loc='upper right')
     plt.title('Training and Validation Loss')
-
     plt.subplot(1, 2, 2)
-    plt.plot(epochs_range, valid_acc, label='Validation Accuracy')
+    plt.plot(epochs_range, [acc.cpu().numpy() for acc in train_acc], label='Training Accuracy')
+    plt.plot(epochs_range, [acc.cpu().numpy() for acc in valid_acc], label='Valid Accuracy')
     plt.xlabel('Epochs')
     plt.ylabel('Accuracy')
     plt.legend(loc='lower right')
     plt.title('Validation Accuracy')
-
+    plt.savefig(f"training_validation.png")
     plt.show()
 
 train(model, l, optimizer, epochs, train_data, val_data, device)
