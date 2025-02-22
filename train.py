@@ -338,6 +338,4 @@ print(device)
 
 model = ResNet32(176)# 176种叶子
 model = model.to(device)
-model.device = device
-print(model)
 5
