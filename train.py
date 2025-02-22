@@ -328,5 +328,9 @@ def train(model, l, optimizer, epochs, train_data, val_data, device):
     plt.show()
 
 train(model, l, optimizer, epochs, train_data, val_data, device)
-asasdfasdfasdfasdfasdfas
-asdohflashdf
+
+        # Make sure the model is in eval mode so that some modules like dropout are disabled and work normally.
+        model.eval()
+        # These are used to record information in validation.
+        valid_loss = []
+        valid_accs = []
