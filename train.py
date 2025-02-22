@@ -337,3 +337,9 @@ train(model, l, optimizer, epochs, train_data, val_data, device)
             best_acc = valid_acc
             torch.save(model.state_dict(), "model_path.pth")
             print('saving model with acc {:.3f}'.format(best_acc))
+
+        # Make sure the model is in eval mode so that some modules like dropout are disabled and work normally.
+        model.eval()
+        # These are used to record information in validation.
+        valid_loss = []
+        valid_accs = []
