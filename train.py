@@ -330,9 +330,13 @@ def train(model, l, optimizer, epochs, train_data, val_data, device):
 train(model, l, optimizer, epochs, train_data, val_data, device)
 
 
-l = nn.CrossEntropyLoss()
-lr = 0.1
-optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=5e-4)
-epochs = 10
-batch_size = 32
-train_data, val_data = load_data("train", batch_size)
+def get_device():
+    return 'cuda' if torch.cuda.is_available() else 'cpu'
+
+device = get_device()
+print(device)
+
+model = ResNet32(176)# 176种叶子
+model = model.to(device)
+model.device = device
+print(model)
