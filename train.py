@@ -330,15 +330,9 @@ def train(model, l, optimizer, epochs, train_data, val_data, device):
 train(model, l, optimizer, epochs, train_data, val_data, device)
 
 
-        print(f"[ Valid | {epoch + 1:03d}/{epochs:03d} ] loss = {valid_loss:.5f}, acc = {valid_acc:.5f}")
-        
-        # if the model improves, save a checkpoint at this epoch
-        if valid_acc > best_acc:
-           asdfjjsaoidfj
-           asdhfasdhfui
-          
-        # Make sure the model is in eval mode so that some modules like dropout are disabled and work normally.
-        model.eval()
-        # These are used to record information in validation.
-        valid_loss = []
-        valid_accs = []
+l = nn.CrossEntropyLoss()
+lr = 0.1
+optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=5e-4)
+epochs = 10
+batch_size = 32
+train_data, val_data = load_data("train", batch_size)
